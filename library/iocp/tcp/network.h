@@ -59,6 +59,7 @@ namespace tcp {
 	};
 
 	class network : public iocp::worker {
+	protected:
 		using size_type = unsigned int;
 		using handle = grc::arena<session, true>::handle;
 		using node = grc::arena<session, true>::node;
@@ -67,6 +68,9 @@ namespace tcp {
 		};
 		library::socket_extend _socket_extend;
 		library::socket _listen_socket;
+		std::stop_source _accept_source;
+		std::atomic<int> _accept_count;
+
 		grc::arena<session, true> _session_arena;
 		std::stop_source _stop_source;
 		std::atomic<int> _stop_count;
@@ -82,6 +86,9 @@ namespace tcp {
 		unsigned long _send_timeout = 1000000;
 		unsigned long _send_bytelimit = 2048;
 
+		unsigned long _accept_bucket = 0;
+		unsigned long _receive_bucket = 0;
+		unsigned long _send_bucket = 0;
 		struct metric {
 			unsigned long long _accept_total = 0;
 			unsigned long long _connect_total = 0;
@@ -107,31 +114,15 @@ namespace tcp {
 		void listen_start(library::socket_address const& address, int backlog) noexcept;
 		void listen_stop(void) noexcept;
 		void socket_connect(library::socket_address const& address) noexcept;
-		virtual auto socket_accept(library::socket_address const& address) noexcept -> iocp::coroutine<bool> {
-			co_return true;
-		};
+		virtual auto socket_accept(library::socket_address const& address) noexcept -> iocp::coroutine<bool> = 0;
 
 		void session_send(handle handle, iocp::message message) noexcept;
-		void session_cancel(handle handle) noexcept;
 		void session_timeout(handle handle, unsigned long time, bool receive_or_send) noexcept;
-		virtual void session_create(handle handle) noexcept {
-			int a = 10;
-		};
-		virtual auto session_receive(handle handle, iocp::message message) noexcept -> iocp::coroutine<bool> {
-			[](tcp::network& network, tcp::network::handle handle, iocp::message message) -> iocp::coroutine<void> {
-				if (8 != message.size())
-					__debugbreak();
-				unsigned long long value;
-				message >> value;
-				auto message_ = network::message_create(8);
-				message_ << value;
-
-				network.session_send(handle, message_);
-				co_return;
-				}(*this, handle, message);
-				co_return true;
-		};
-		virtual void session_destroy(handle handle) noexcept {};
+		void session_cancel(handle handle) noexcept;
+		void session_clear(void) noexcept;
+		virtual void session_create(handle handle) noexcept = 0;
+		virtual auto session_receive(handle handle, iocp::message message) noexcept -> iocp::coroutine<bool> = 0;
+		virtual void session_destroy(handle handle) noexcept = 0;
 
 		inline static auto message_create(size_type const size) noexcept -> iocp::message {
 			auto message = iocp::message_pool::instance().allocate(sizeof(header) + size);
