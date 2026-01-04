@@ -1,9 +1,9 @@
 #pragma once
 #include "../message.h"
-#include "module/grc/handle.h"
-#include "library/system/socket.h"
-#include "library/system/time.h"
-#include "library/container/lockfree/queue.h"
+#include "../../grc/handle.h"
+#include "../../socket.h"
+#include "../../time.h"
+#include "../../lockfree/queue.h"
 
 namespace tcp {
 	struct header final {

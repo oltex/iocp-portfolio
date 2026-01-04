@@ -2,8 +2,7 @@
 #include "session.h"
 #include "../worker.h"
 #include "../promise.h"
-#include "library/container/lockfree/free_list.h"
-#include "module/grc/arena.h"
+#include "../../grc/arena.h"
 #include <stop_token>
 #include <atomic>
 
@@ -72,7 +71,6 @@ namespace tcp {
 		std::stop_source _stop_source;
 		std::atomic<int> _stop_count;
 
-
 		//엑셉트 ip당 접속 제한을 설정해두기 umap으로 특정 ip는 허용케금 하기
 		//엑셉트 특정 ip는 아예 차단하기 bloom filter를 써서 막기
 		//엑셉트 ip 대역을 차단시키는 방법도 연구하기
@@ -83,13 +81,28 @@ namespace tcp {
 
 		unsigned long _send_timeout = 1000000;
 		unsigned long _send_bytelimit = 2048;
+
+		struct metric {
+			unsigned long long _accept_total = 0;
+			unsigned long long _connect_total = 0;
+			unsigned long _accept_sec = 0;
+			unsigned long _receive_sec = 0;
+			unsigned long _send_sec = 0;
+
+			unsigned long _session_count = 0;
+
+			unsigned long long _receive_timeout_total = 0;
+			unsigned long long _header_bytelimit_total = 0;
+			unsigned long long _send_timeout_total = 0;
+			unsigned long long _send_bytelimit_total = 0;
+		} _metric;
 	public:
-		network(void) noexcept;
+		network(unsigned long const session_capacity) noexcept;
 		network(network const&) noexcept = delete;
 		network(network&&) noexcept = delete;
 		auto operator=(network const&) noexcept -> network & = delete;
 		auto operator=(network&&) noexcept -> network & = delete;
-		~network(void) noexcept;
+		virtual ~network(void) noexcept;
 
 		void listen_start(library::socket_address const& address, int backlog) noexcept;
 		void listen_stop(void) noexcept;
@@ -126,6 +139,7 @@ namespace tcp {
 			message.push(reinterpret_cast<unsigned char*>(&_header), sizeof(header));
 			return message;
 		}
+		auto network_metric(void) noexcept -> metric;
 
 		virtual void execute(bool result, unsigned long transferred, uintptr_t key, OVERLAPPED* overlapped) noexcept override;
 		auto receive(node& node) noexcept -> iocp::coroutine<void>;

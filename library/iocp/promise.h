@@ -1,7 +1,7 @@
 #pragma once
 #include "task.h"
 #include "scheduler.h"
-#include "library/system/coroutine.h"
+#include "../coroutine.h"
 
 namespace iocp {
 	class finalize : public library::awaiter {

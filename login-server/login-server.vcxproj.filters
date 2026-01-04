@@ -2,8 +2,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="application.cpp" />
+    <ClCompile Include="login_network.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="allp.h" />
+    <ClInclude Include="application.h" />
+    <ClInclude Include="login_network.h" />
   </ItemGroup>
 </Project>

@@ -1,8 +1,8 @@
 #pragma once
-#include "library/container/array.h"
-#include "library/container/intrusive/pointer.h"
-#include "library/container/thread-local/pool.h"
-#include "library/container/serialize.h"
+#include "../array.h"
+#include "../intrusive/pointer.h"
+#include "../thread-local/pool.h"
+#include "../serialize.h"
 #include <cassert>
 
 namespace iocp {

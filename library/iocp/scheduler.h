@@ -1,9 +1,8 @@
 #pragma once
-#include "library/define.h"
-#include "library/system/inputoutput_complet_port.h"
-#include "library/system/thread.h"
-#include "library/container/array.h"
-#include "library/pattern/singleton.h"
+#include "library/inputoutput.h"
+#include "library/thread.h"
+#include "library/array.h"
+#include "library/singleton.h"
 
 namespace iocp {
 	class worker;

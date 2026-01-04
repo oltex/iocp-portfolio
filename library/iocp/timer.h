@@ -1,10 +1,10 @@
 #pragma once
 #include "task.h"
-#include "library/system/time.h"
-#include "library/system/thread.h"
-#include "library/container/lockfree/queue.h"
-#include "library/system/wait_on_address.h"
-#include "library/system/coroutine.h"
+#include "../time.h"
+#include "../thread.h"
+#include "../synchronize.h"
+#include "../coroutine.h"
+#include "../lockfree/queue.h"
 
 namespace iocp {
 	class sleep : public library::awaiter, public task {

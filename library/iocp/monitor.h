@@ -1,7 +1,7 @@
 #pragma once
 #include "promise.h"
-#include "library/system/lock.h"
-#include "library/pattern/singleton.h"
+#include "../lock.h"
+#include "../singleton.h"
 #include <stop_token>
 #include <atomic>
 
