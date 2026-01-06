@@ -65,7 +65,7 @@ namespace tcp {
 		using node = grc::arena<session, true>::node;
 	private:
 		enum class key_type : unsigned char {
-			accept = 0, session, destory
+			accept = 0, session, destroy
 		};
 		library::socket_extend _socket_extend;
 		library::socket _listen_socket;
@@ -77,13 +77,13 @@ namespace tcp {
 
 
 		//security
-		unsigned long long _header_fixed;
-
 		//엑셉트 ip당 접속 제한을 설정해두기 umap으로 특정 ip는 허용케금 하기
 		//엑셉트 특정 ip는 아예 차단하기 bloom filter를 써서 막기
 		//엑셉트 ip 대역을 차단시키는 방법도 연구하기
 		unsigned long _receive_timeout = 1000000;
 		unsigned long _receive_bytelimit = 512;
+
+		unsigned long long _header_fixed;
 		unsigned long _header_bytelimit = 128;
 
 		unsigned long _send_timeout = 1000000;
@@ -108,7 +108,10 @@ namespace tcp {
 			unsigned long long _send_bytelimit_total = 0;
 		} _metric;
 	public:
-		network(unsigned long const session_capacity, unsigned long long header_fixed) noexcept;
+		network(unsigned long const session_capacity, 
+			unsigned long receive_timeout, unsigned long receive_bytelimit,
+			unsigned long long header_fixed, unsigned long header_bytelimit,
+			unsigned long send_timeout, unsigned long send_bytelimit) noexcept;
 		network(network const&) noexcept = delete;
 		network(network&&) noexcept = delete;
 		auto operator=(network const&) noexcept -> network & = delete;

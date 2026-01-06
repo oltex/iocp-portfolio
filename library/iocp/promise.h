@@ -20,12 +20,12 @@ namespace iocp {
 		std::coroutine_handle<void> _parent = std::noop_coroutine();
 		result _value;
 	public:
-		inline promise(void) noexcept = default;
-		inline promise(promise const&) noexcept = delete;
-		inline promise(promise&&) noexcept = delete;
-		inline auto operator=(promise const&) noexcept -> promise & = delete;
-		inline auto operator=(promise&&) noexcept -> promise & = delete;
-		inline ~promise(void) noexcept = default;
+		promise(void) noexcept = default;
+		promise(promise const&) noexcept = delete;
+		promise(promise&&) noexcept = delete;
+		auto operator=(promise const&) noexcept -> promise & = delete;
+		auto operator=(promise&&) noexcept -> promise & = delete;
+		~promise(void) noexcept = default;
 
 		auto final_suspend(void) noexcept -> finalize {
 			return finalize(_parent);
@@ -47,11 +47,11 @@ namespace iocp {
 		std::coroutine_handle<void> _parent = std::noop_coroutine();
 	public:
 		promise(void) noexcept = default;
-		inline promise(promise const&) noexcept = delete;
-		inline promise(promise&&) noexcept = delete;
-		inline auto operator=(promise const&) noexcept -> promise & = delete;
-		inline auto operator=(promise&&) noexcept -> promise & = delete;
-		inline ~promise(void) noexcept = default;
+		promise(promise const&) noexcept = delete;
+		promise(promise&&) noexcept = delete;
+		auto operator=(promise const&) noexcept -> promise & = delete;
+		auto operator=(promise&&) noexcept -> promise & = delete;
+		~promise(void) noexcept = default;
 
 		auto final_suspend(void) noexcept -> finalize;
 		void return_void(void) noexcept {};
@@ -62,20 +62,23 @@ namespace iocp {
 	class coroutine : public library::coroutine<iocp::promise<result>>, public library::awaiter {
 		using base = library::coroutine<iocp::promise<result>>;
 		using base::base;
-		bool _child = false;
+		bool _start = true;
 	public:
 		~coroutine(void) noexcept {
-			if (false == _child) {
+			if (true == _start) {
 				auto& promise = base::_handle.promise();
 				promise._parent = std::noop_coroutine();
 				scheduler::instance().post(promise);
 			}
 		}
 
+		void auto_start(bool enable) noexcept {
+			_start = enable;
+		}
 		auto await_suspend(std::coroutine_handle<void> handle) noexcept -> std::coroutine_handle<void> {
 			auto& current = base::_handle.promise();
 			current._parent = handle;
-			_child = true;
+			_start = false;
 			return base::_handle;
 		}
 		auto await_resume(void) noexcept -> result {

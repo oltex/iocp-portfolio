@@ -11,36 +11,31 @@ namespace grc {
 		using size_type = unsigned int;
 		using handle = unsigned long long;
 		struct node {
-			unsigned long long _key;
+			handle _key;
+			unsigned long _reference;
 			type* _value;
+			void (*_deleter)(type*);
 		public:
 			template<typename derive>
-			void attach(derive* pointer) noexcept {
+			void attach(derive* pointer, void(*deleter)(type*)) noexcept {
 				_value = library::cast<type*>(pointer);
-				library::interlock_exchange_add(_key, 0x100010000ull);
-				library::interlock_and(_key, 0x7fffffffffffffffull);
+				_deleter = deleter;
+				_key += 0x10000ull;
+				library::interlock_increment(_reference);
+				library::interlock_and(_reference, 0x7FFFFFFFul);
+			}
+			auto acquire(void) noexcept -> bool {
+				return !(0x80000000ul & library::interlock_increment(_reference));
 			}
 			auto acquire(handle key) noexcept -> bool {
-				for (unsigned long long current = _key, prev; (0xffffffff00000000ull & current) == (0x7fffffff00000000ull & key); current = prev) {
-					auto next = current + 0x10000ull;
-					if (prev = library::interlock_compare_exchange(_key, next, current); prev == current)
-						return true;
-				}
-				return false;
+				return acquire() && _key == key;
 			}
 			auto release(void) noexcept -> bool {
-				for (unsigned long long current = _key, prev;; current = prev) {
-					if ((current & 0xffff0000ull) == 0x10000ull) {
-						auto next = (current - 0x10000ull) | 0x8000000000000000ull;
-						if (prev = library::interlock_compare_exchange(_key, next, current); prev == current)
-							return true;
-					}
-					else {
-						auto next = current - 0x10000ull;
-						if (prev = library::interlock_compare_exchange(_key, next, current); prev == current)
-							return false;
-					}
+				if (0 == library::interlock_decrement(_reference) && 0 == library::interlock_compare_exchange(_reference, 0x80000000ul, 0)) {
+					_deleter(_value);
+					return true;
 				}
+				return false;
 			}
 		};
 	protected:
@@ -49,7 +44,8 @@ namespace grc {
 		arena(size_type const capacity) noexcept
 			: _slot(capacity) {
 			for (auto index = 0u; index < _slot.capacity(); ++index) {
-				_slot[index]._key = 0x8000000000000000ull | 0xffff & static_cast<unsigned long long>(index);
+				_slot[index]._key = 0xffff & static_cast<unsigned long long>(index);
+				_slot[index]._reference = 0x80000000;
 			}
 		}
 		arena(arena const&) noexcept = delete;

@@ -57,7 +57,7 @@ namespace iocp {
 		unsigned short _size;
 		unsigned short _check_sum;
 		unsigned short _seed;
-			
+
 		auto initialize(unsigned short size) noexcept -> bool;
 		void encrypt(unsigned long long fixed, unsigned char* buffer) noexcept;
 		auto decrypt(unsigned long long fixed, unsigned char* buffer) const noexcept -> bool;

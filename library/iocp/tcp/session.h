@@ -15,9 +15,9 @@ namespace tcp {
 		}
 	};
 
-	class network;
 	class session {
-	public:
+		friend class network;
+		friend class receive;
 		library::socket _socket;
 		bool _cancel_flag;
 

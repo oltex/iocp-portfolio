@@ -30,23 +30,21 @@ namespace iocp {
 		return proxy{ &mutex, mutex::mode::share };
 	}
 	class lock : public library::awaiter, public task {
-	public:
+		friend void unlock(library::vector<proxy>& arg) noexcept;
 		std::coroutine_handle<void> _handle;
 		library::vector<proxy> _proxy;
 		unsigned long _dependency = 0;
 	public:
-		template <typename... argument>
-		lock(argument... arg) noexcept {
-			_proxy.emplace_back(arg...);
-		}
-		lock(library::vector<proxy>& arg) noexcept {
-			for (auto& iter : arg)
-				_proxy.emplace_back(iter);
-		}
+		//template <typename... argument>
+		//lock(argument... arg) noexcept {
+		//	_proxy.emplace_back(arg...);
+		//}
+		lock(library::vector<proxy>& arg) noexcept;
 		auto await_suspend(std::coroutine_handle<void> handle) noexcept -> bool;
 		virtual void execute(void) noexcept override;
 	};
 	extern void unlock(library::vector<proxy>& arg) noexcept;
+
 	class fork : public library::awaiter, public task {
 		using size_type = unsigned int;
 		std::coroutine_handle<void> _handle;

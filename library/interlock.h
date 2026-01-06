@@ -123,7 +123,7 @@ namespace library {
 	}
 	template<typename type>
 		requires library::any_of_type<library::remove_volatile<type>, unsigned int, int, unsigned long, long, unsigned long long, long long>
-	inline auto interlock_exchange_add(type& addend, library::type_identity<type> value) noexcept {
+	inline auto interlock_exchange_add(type& addend, library::type_identity<type> value) noexcept -> type {
 		if constexpr (4 == sizeof(type))
 			return ::_InterlockedExchangeAdd(reinterpret_cast<long volatile*>(&addend), static_cast<long>(value));
 		else
