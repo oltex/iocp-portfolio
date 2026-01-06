@@ -126,14 +126,14 @@ namespace library::_thread_local {
 							current->_value = context._head;
 							for (bucket* head = _stack, *prev;; head = prev) {
 								current->_next = head;
-								if (prev = library::interlock_compare_exhange(_stack, current, head); prev == head)
+								if (prev = library::interlock_compare_exchange(_stack, current, head); prev == head)
 									break;
 							}
 						}
 						break;
 					}
 					unsigned long long next = reinterpret_cast<unsigned long long>(address->_next) + (0xFFFF800000000000ULL & head) + 0x0000800000000000ULL;
-					if (prev = library::interlock_compare_exhange(_head, next, head); prev == head) {
+					if (prev = library::interlock_compare_exchange(_head, next, head); prev == head) {
 						context._head = address->_value;
 						context._size = address->_size;
 						_pool.deallocate(address);

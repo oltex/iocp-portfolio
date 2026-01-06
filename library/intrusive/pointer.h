@@ -90,8 +90,8 @@ namespace library::intrusive {
 		inline share_pointer(weak_pointer<other, index> const& weak_ptr) noexcept
 			: _pointer(weak_ptr._pointer) {
 			if (nullptr != _pointer) {
-				for (size_type use = _pointer->_use, prev; 0 != use; use = prev)
-					if (prev = library::interlock_compare_exhange(_pointer->_use, use + 1, use), use == prev)
+				for (auto use = _pointer->_use, prev; 0 != use; use = prev)
+					if (prev = library::interlock_compare_exchange(_pointer->_use, use + 1, use), use == prev)
 						return;
 				_pointer = nullptr;
 			}

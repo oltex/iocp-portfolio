@@ -97,11 +97,11 @@ namespace library::lockfree {
 		template<typename... argument>
 		inline auto allocate(argument&&... arg) noexcept -> type* {
 			for (unsigned long long head = _head, prev;; head = prev) {
-				node* current = reinterpret_cast<node*>(0x00007FFFFFFFFFFFULL & head);
+				node* current = reinterpret_cast<node*>(0x00007fffffffffffull & head);
 				if (nullptr == current)
 					return nullptr;
-				auto next = reinterpret_cast<unsigned long long>(current->_next) + (0xFFFF800000000000ULL & head) + 0x0000800000000000ULL;
-				if (prev = library::interlock_compare_exhange(_head, next, head); prev == head) {
+				auto next = reinterpret_cast<unsigned long long>(current->_next) + (0xffff800000000000ull & head) + 0x0000800000000000ull;
+				if (prev = library::interlock_compare_exchange(_head, next, head); prev == head) {
 					if constexpr (true == placement)
 						library::construct<type, argument...>(current->_value, std::forward<argument>(arg)...);
 					return &current->_value;
@@ -113,9 +113,9 @@ namespace library::lockfree {
 				library::destruct<type>(*value);
 			auto current = reinterpret_cast<node*>(reinterpret_cast<unsigned char*>(value) - offsetof(node, _value));
 			for (unsigned long long head = _head, prev;; head = prev) {
-				current->_next = reinterpret_cast<node*>(head & 0x00007FFFFFFFFFFFULL);
-				unsigned long long next = reinterpret_cast<unsigned long long>(current) + (head & 0xFFFF800000000000ULL);
-				if (prev = library::interlock_compare_exhange(_head, next, head); prev == head)
+				current->_next = reinterpret_cast<node*>(head & 0x00007fffffffffffull);
+				unsigned long long next = reinterpret_cast<unsigned long long>(current) + (head & 0xffff800000000000ull);
+				if (prev = library::interlock_compare_exchange(_head, next, head); prev == head)
 					break;
 			}
 		}

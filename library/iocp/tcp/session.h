@@ -6,9 +6,6 @@
 #include "../../lockfree/queue.h"
 
 namespace tcp {
-	struct header final {
-		unsigned short _size;
-	};
 	struct overlap {
 		enum class mode { connect, receive, send };
 		mode _mode;

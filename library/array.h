@@ -1,6 +1,6 @@
 #pragma once
-#include "../memory.h"
-#include "../function.h"
+#include "memory.h"
+#include "function.h"
 #include <memory>
 #include <cassert>
 

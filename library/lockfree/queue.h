@@ -1,13 +1,13 @@
 #pragma once
 #include "../memory.h"
-#include "../template.h"
+#include "../../template.h"
 #include "../thread-local/pool.h"
 #include "../storage.h"
 #include <optional>
 
 namespace library::lockfree {
 	template <typename type, bool multi_pop = true>
-		requires library::memory_copy_safe<type> || (std::is_trivially_copy_constructible_v<type>&& std::is_trivially_destructible_v<type>)
+		requires library::memory_copy_safe<type> || (std::is_trivially_copy_constructible_v<type> && std::is_trivially_destructible_v<type>)
 	class queue {
 	protected:
 		struct node final {
@@ -63,9 +63,9 @@ namespace library::lockfree {
 		inline auto operator=(queue const&) noexcept -> queue & = delete;
 		inline auto operator=(queue&&) noexcept -> queue & = delete;
 		inline ~queue(void) noexcept {
-			auto head = reinterpret_cast<node*>(0x00007FFFFFFFFFFEULL & _head);
+			auto head = reinterpret_cast<node*>(0x00007ffffffffffeull & _head);
 			for (;;) {
-				node* current = library::exchange(head, reinterpret_cast<node*>(0x00007FFFFFFFFFFEULL & head->_next));
+				node* current = library::exchange(head, reinterpret_cast<node*>(0x00007ffffffffffeull & head->_next));
 				_pool::instance().deallocate(current);
 				if (reinterpret_cast<unsigned long long>(this) == reinterpret_cast<unsigned long long>(head))
 					break;
@@ -79,19 +79,19 @@ namespace library::lockfree {
 			library::construct<type>(current->_value, std::forward<argument>(arg)...);
 
 			for (unsigned long long tail = _tail;;) {
-				unsigned long long count = 0xFFFF800000000000ULL & tail;
-				auto address = reinterpret_cast<node*>(0x00007FFFFFFFFFFEULL & tail);
+				unsigned long long count = 0xffff800000000000ull & tail;
+				auto address = reinterpret_cast<node*>(0x00007ffffffffffeull & tail);
 				unsigned long long next = address->_next;
 
-				unsigned long long next_count = count + 0x0000800000000000ULL;
-				if (next_count == (0xFFFF800000000000ULL & next)) {
+				unsigned long long next_count = count + 0x0000800000000000ull;
+				if (next_count == (0xffff800000000000ull & next)) {
 					if (1 == (0x1ULL & next)) {
 						tail = _InterlockedCompareExchange(reinterpret_cast<unsigned long long volatile*>(&_tail), next, tail);
 						continue;
 					}
-					else if (reinterpret_cast<unsigned long long>(this) == (0x00007FFFFFFFFFFFULL & next)) {
+					else if (reinterpret_cast<unsigned long long>(this) == (0x00007fffffffffffull & next)) {
 						unsigned long long next_tail = next_count + reinterpret_cast<unsigned long long>(current) + 1;
-						current->_next = next_count + 0x0000800000000000ULL + reinterpret_cast<unsigned long long>(this);
+						current->_next = next_count + 0x0000800000000000ull + reinterpret_cast<unsigned long long>(this);
 						if (next == _InterlockedCompareExchange(reinterpret_cast<unsigned long long volatile*>(&address->_next), next_tail, next))
 							break;
 					}
@@ -102,23 +102,23 @@ namespace library::lockfree {
 		}
 		inline auto pop(void) noexcept -> std::optional<type> requires (true == multi_pop) {
 			for (unsigned long long head = _head, prev;;) {
-				unsigned long long count = 0xFFFF800000000000ULL & head;
-				auto address = reinterpret_cast<node*>(0x00007FFFFFFFFFFEULL & head);
+				unsigned long long count = 0xffff800000000000ull & head;
+				auto address = reinterpret_cast<node*>(0x00007ffffffffffeull & head);
 				unsigned long long next = address->_next;
 
-				if (count + 0x0000800000000000ULL == (0xFFFF800000000000ULL & next)) {
-					if (reinterpret_cast<unsigned long long>(this) == (0x00007FFFFFFFFFFFULL & next))
+				if (count + 0x0000800000000000ull == (0xffff800000000000ull & next)) {
+					if (reinterpret_cast<unsigned long long>(this) == (0x00007fffffffffffull & next))
 						return std::nullopt;
-					else if (1 == (0x1ULL & next)) {
+					else if (1 == (0x1ull & next)) {
 						unsigned long long tail = _tail;
 						if (tail == head)
 							_InterlockedCompareExchange(reinterpret_cast<unsigned long long volatile*>(&_tail), next, tail);
-							library::storage<type> result;
-							result.relocate(reinterpret_cast<node*>(0x00007FFFFFFFFFFEULL & next)->_value);
-							if (prev = _InterlockedCompareExchange(reinterpret_cast<unsigned long long volatile*>(&_head), next, head); prev == head) {
-								_pool::instance().deallocate(address);
-								return std::move(result.get());
-							}
+						library::storage<type> result;
+						result.relocate(reinterpret_cast<node*>(0x00007ffffffffffeull & next)->_value);
+						if (prev = _InterlockedCompareExchange(reinterpret_cast<unsigned long long volatile*>(&_head), next, head); prev == head) {
+							_pool::instance().deallocate(address);
+							return std::move(result.get());
+						}
 						head = prev;
 						continue;
 					}
@@ -126,13 +126,12 @@ namespace library::lockfree {
 				head = *reinterpret_cast<volatile unsigned long long*>(&_head);
 			}
 		}
-
 		inline auto pop(void) noexcept -> type requires (false == multi_pop) {
 			unsigned long long head = _head;
-			auto address = reinterpret_cast<node*>(0x00007FFFFFFFFFFEULL & head);
+			auto address = reinterpret_cast<node*>(0x00007ffffffffffeull & head);
 			unsigned long long next = address->_next;
 
-			if (reinterpret_cast<unsigned long long>(this) == (0x00007FFFFFFFFFFFULL & next))
+			if (reinterpret_cast<unsigned long long>(this) == (0x00007fffffffffffull & next))
 				__debugbreak();
 			else if (1 != (0x1ULL & next))
 				__debugbreak();
@@ -142,22 +141,22 @@ namespace library::lockfree {
 				_InterlockedCompareExchange(reinterpret_cast<unsigned long long volatile*>(&_tail), next, tail);
 
 			library::storage<type> result;
-			result.relocate(reinterpret_cast<node*>(0x00007FFFFFFFFFFEULL & next)->_value);
+			result.relocate(reinterpret_cast<node*>(0x00007ffffffffffeull & next)->_value);
 			_head = next;
 			_pool::instance().deallocate(address);
 			return std::move(result.get());
 		}
 		inline auto empty(void) const noexcept requires (false == multi_pop) {
 			unsigned long long head = _head;
-			auto address = reinterpret_cast<node*>(0x00007FFFFFFFFFFEULL & head);
+			auto address = reinterpret_cast<node*>(0x00007ffffffffffeull & head);
 			unsigned long long next = address->_next;
 
-			if (reinterpret_cast<unsigned long long>(this) == (0x00007FFFFFFFFFFFULL & next))
+			if (reinterpret_cast<unsigned long long>(this) == (0x00007fffffffffffull & next))
 				return true;
 			return false;
 		}
 		inline auto begin(void) noexcept -> iterator requires(false == multi_pop) {
-			return iterator(reinterpret_cast<node*>(0x00007FFFFFFFFFFEULL & reinterpret_cast<node*>(0x00007FFFFFFFFFFEULL & _head)->_next));
+			return iterator(reinterpret_cast<node*>(0x00007ffffffffffeull & reinterpret_cast<node*>(0x00007ffffffffffeull & _head)->_next));
 		}
 		inline auto end(void) noexcept -> iterator requires(false == multi_pop) {
 			return iterator(reinterpret_cast<node*>(this));

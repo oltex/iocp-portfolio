@@ -63,6 +63,7 @@ namespace tcp {
 		using size_type = unsigned int;
 		using handle = grc::arena<session, true>::handle;
 		using node = grc::arena<session, true>::node;
+	private:
 		enum class key_type : unsigned char {
 			accept = 0, session, destory
 		};
@@ -70,15 +71,17 @@ namespace tcp {
 		library::socket _listen_socket;
 		std::stop_source _accept_source;
 		std::atomic<int> _accept_count;
-
-		grc::arena<session, true> _session_arena;
 		std::stop_source _stop_source;
 		std::atomic<int> _stop_count;
+		grc::arena<session, true> _session_arena;
+
+
+		//security
+		unsigned long long _header_fixed;
 
 		//엑셉트 ip당 접속 제한을 설정해두기 umap으로 특정 ip는 허용케금 하기
 		//엑셉트 특정 ip는 아예 차단하기 bloom filter를 써서 막기
 		//엑셉트 ip 대역을 차단시키는 방법도 연구하기
-
 		unsigned long _receive_timeout = 1000000;
 		unsigned long _receive_bytelimit = 512;
 		unsigned long _header_bytelimit = 128;
@@ -86,6 +89,7 @@ namespace tcp {
 		unsigned long _send_timeout = 1000000;
 		unsigned long _send_bytelimit = 2048;
 
+		//metric
 		unsigned long _accept_bucket = 0;
 		unsigned long _receive_bucket = 0;
 		unsigned long _send_bucket = 0;
@@ -104,7 +108,7 @@ namespace tcp {
 			unsigned long long _send_bytelimit_total = 0;
 		} _metric;
 	public:
-		network(unsigned long const session_capacity) noexcept;
+		network(unsigned long const session_capacity, unsigned long long header_fixed) noexcept;
 		network(network const&) noexcept = delete;
 		network(network&&) noexcept = delete;
 		auto operator=(network const&) noexcept -> network & = delete;
@@ -115,26 +119,19 @@ namespace tcp {
 		void listen_stop(void) noexcept;
 		void socket_connect(library::socket_address const& address) noexcept;
 		virtual auto socket_accept(library::socket_address const& address) noexcept -> iocp::coroutine<bool> = 0;
-
+		auto session_receive(node& node) noexcept -> iocp::coroutine<void>;
 		void session_send(handle handle, iocp::message message) noexcept;
+		auto session_timeout(void) noexcept -> iocp::coroutine<void>;
 		void session_timeout(handle handle, unsigned long time, bool receive_or_send) noexcept;
 		void session_cancel(handle handle) noexcept;
 		void session_clear(void) noexcept;
 		virtual void session_create(handle handle) noexcept = 0;
 		virtual auto session_receive(handle handle, iocp::message message) noexcept -> iocp::coroutine<bool> = 0;
 		virtual void session_destroy(handle handle) noexcept = 0;
-
-		inline static auto message_create(size_type const size) noexcept -> iocp::message {
-			auto message = iocp::message_pool::instance().allocate(sizeof(header) + size);
-			header _header{ ._size = 8 };
-			message.push(reinterpret_cast<unsigned char*>(&_header), sizeof(header));
-			return message;
-		}
-		auto network_metric(void) noexcept -> metric;
+		static auto message_create(size_type const capacity) noexcept -> iocp::message;
+		auto network_monitor(void) noexcept -> iocp::coroutine<void>;
+		auto network_metric(void) const noexcept -> metric;
 
 		virtual void execute(bool result, unsigned long transferred, uintptr_t key, OVERLAPPED* overlapped) noexcept override;
-		auto receive(node& node) noexcept -> iocp::coroutine<void>;
-		auto timeout(void) noexcept -> iocp::coroutine<void>;
-		auto monitor(void) noexcept -> iocp::coroutine<void>;
 	};
 }

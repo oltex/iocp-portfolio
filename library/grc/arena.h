@@ -7,37 +7,49 @@
 namespace grc {
 	template<typename type, bool inplace>
 	class arena {
+	public:
 		using size_type = unsigned int;
 		using handle = unsigned long long;
 		struct node {
 			unsigned long long _key;
-			unsigned long _reference;
 			type* _value;
 		public:
 			template<typename derive>
 			void attach(derive* pointer) noexcept {
-				_value = library::cast<derive*>(pointer);
-				_key += 0x10000;
-				library::interlock_increment(node->_reference);
-				library::interlock_and(node->_reference, 0x7FFFFFFF);
-			}
-			auto acquire(void) noexcept -> bool {
-				return !(0x80000000ul & library::interlock_increment(_reference));
+				_value = library::cast<type*>(pointer);
+				library::interlock_exchange_add(_key, 0x100010000ull);
+				library::interlock_and(_key, 0x7fffffffffffffffull);
 			}
 			auto acquire(handle key) noexcept -> bool {
-				return acquire() && _key == key;
+				for (unsigned long long current = _key, prev; (0xffffffff00000000ull & current) == (0x7fffffff00000000ull & key); current = prev) {
+					auto next = current + 0x10000ull;
+					if (prev = library::interlock_compare_exchange(_key, next, current); prev == current)
+						return true;
+				}
+				return false;
 			}
 			auto release(void) noexcept -> bool {
-				return 0 == library::interlock_decrement(_reference) && 0 == library::interlock_compare_exhange(_reference, 0x80000000ul, 0);
+				for (unsigned long long current = _key, prev;; current = prev) {
+					if ((current & 0xffff0000ull) == 0x10000ull) {
+						auto next = (current - 0x10000ull) | 0x8000000000000000ull;
+						if (prev = library::interlock_compare_exchange(_key, next, current); prev == current)
+							return true;
+					}
+					else {
+						auto next = current - 0x10000ull;
+						if (prev = library::interlock_compare_exchange(_key, next, current); prev == current)
+							return false;
+					}
+				}
 			}
 		};
+	protected:
 		library::lockfree::free_list<node, false, false> _slot;
 	public:
 		arena(size_type const capacity) noexcept
 			: _slot(capacity) {
 			for (auto index = 0u; index < _slot.capacity(); ++index) {
-				_slot[index]._key = 0xffff & static_cast<unsigned long long>(index);
-				_slot[index]._reference = 0x80000000;
+				_slot[index]._key = 0x8000000000000000ull | 0xffff & static_cast<unsigned long long>(index);
 			}
 		}
 		arena(arena const&) noexcept = delete;
@@ -81,7 +93,7 @@ namespace grc {
 				return acquire() && _key == key;
 			}
 			auto release(void) noexcept -> bool {
-				if (0 == library::interlock_decrement(_reference) && 0 == library::interlock_compare_exhange(_reference, 0x80000000ul, 0)) {
+				if (0 == library::interlock_decrement(_reference) && 0 == library::interlock_compare_exchange(_reference, 0x80000000ul, 0)) {
 					library::destruct<type>(_value);
 					return true;
 				}

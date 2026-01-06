@@ -3,7 +3,7 @@
 #include "library/iocp/timer.h"
 
 application::application(void) noexcept
-	: _echo_network(200) {
+	: _echo_network(200, 0xaabbccddeeff) {
 	_echo_network.listen_start(library::socket_address_ipv4("127.0.0.1", 6000), 65535);
 
 	_monitor_count.store(1);

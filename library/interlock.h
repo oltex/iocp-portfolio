@@ -1,5 +1,5 @@
 #pragma once
-#include "../template.h"
+#include "template.h"
 #include <intrin.h>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -131,7 +131,7 @@ namespace library {
 	}
 	template<typename type>
 		requires (library::any_of_type<library::remove_volatile<type>, unsigned short, short, unsigned int, int, unsigned long, long, unsigned long long, long long> || library::pointer_type<type>)
-	inline auto interlock_compare_exhange(type& destine, library::type_identity<type> exchange, library::type_identity<type> compare) noexcept -> type {
+	inline auto interlock_compare_exchange(type& destine, library::type_identity<type> exchange, library::type_identity<type> compare) noexcept -> type {
 		if constexpr (library::pointer_type<type>)
 			return reinterpret_cast<type>(::_InterlockedCompareExchangePointer(reinterpret_cast<void* volatile*>(&destine), reinterpret_cast<void*>(exchange), reinterpret_cast<void*>(compare)));
 		else if constexpr (2 == sizeof(type))
@@ -142,7 +142,7 @@ namespace library {
 			return ::_InterlockedCompareExchange64(reinterpret_cast<long long volatile*>(&destine), static_cast<long long>(exchange), static_cast<long long>(compare));
 	}
 	template<typename type>
-	inline auto interlock_compare_exhange128(type& destine, library::type_identity<type>& exchange, library::type_identity<type> compare) noexcept -> bool {
+	inline auto interlock_compare_exchange128(type& destine, library::type_identity<type>& exchange, library::type_identity<type> compare) noexcept -> bool {
 		return ::_InterlockedCompareExchange128(reinterpret_cast<__int64 volatile*>(&destine), reinterpret_cast<__int64 const*>(&exchange)[1], reinterpret_cast<__int64 const*>(&exchange)[0], reinterpret_cast<__int64*>(&compare));
 	}
 }
