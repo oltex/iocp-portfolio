@@ -10,6 +10,14 @@ namespace grc {
 	public:
 		using size_type = unsigned int;
 		using handle = unsigned long long;
+		class self {
+			friend struct node;
+			handle _key;
+		public:
+			auto arena_handle(void) noexcept -> handle {
+				return _key;
+			}
+		};
 		struct node {
 			handle _key;
 			unsigned long _reference;
@@ -21,6 +29,8 @@ namespace grc {
 				_value = library::cast<type*>(pointer);
 				_deleter = deleter;
 				_key += 0x10000ull;
+				if constexpr (std::is_base_of_v<self, derive>)
+					pointer->_key = _key;
 				library::interlock_increment(_reference);
 				library::interlock_and(_reference, 0x7FFFFFFFul);
 			}
@@ -38,6 +48,7 @@ namespace grc {
 				return false;
 			}
 		};
+		using iterator = library::lockfree::free_list<node, false, false>::iterator;
 	protected:
 		library::lockfree::free_list<node, false, false> _slot;
 	public:
@@ -62,6 +73,12 @@ namespace grc {
 		}
 		auto deallocate(node* node) noexcept {
 			_slot.deallocate(node);
+		}
+		auto begin(void) const noexcept -> iterator {
+			return _slot.begin();
+		}
+		auto end(void) const noexcept -> iterator {
+			return _slot.end();
 		}
 	};
 
@@ -133,18 +150,3 @@ namespace grc {
 		}
 	};
 }
-
-
-//auto handle = grc::handle<type>(node->_key);
-//if constexpr (std::is_base_of_v<self, type>)
-//	node->_value._handle = handle;
-
-//auto release(iterator iter) noexcept -> bool {
-//	auto& node = *iter;
-//	if (0 == library::interlock_decrement(node._reference) && 0 == library::interlock_compare_exhange(node._reference, 0x80000000ul, 0)) {
-//		library::destruct<type>(node._value);
-//		_slot.deallocate(&node); // ¹ÛÀ¸·Î »©¾ßÇÏ³ª °í¹Î
-//		return true;
-//	}
-//	return false;
-//}

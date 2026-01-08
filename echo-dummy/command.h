@@ -1,6 +1,4 @@
 #pragma once
-
-#pragma once
 #include <span>
 #include <string>
 #include <functional>

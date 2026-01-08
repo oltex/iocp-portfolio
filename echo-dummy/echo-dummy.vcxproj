@@ -157,11 +157,13 @@
   <ItemGroup>
     <ClInclude Include="application.h" />
     <ClInclude Include="command.h" />
-    <ClInclude Include="echo_network.h" />
+    <ClInclude Include="dummy.h" />
+    <ClInclude Include="network.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />
-    <ClCompile Include="echo_network.cpp" />
+    <ClCompile Include="dummy.cpp" />
+    <ClCompile Include="network.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,8 +1,8 @@
 #pragma once
-#include "library/inputoutput.h"
-#include "library/thread.h"
-#include "library/array.h"
-#include "library/singleton.h"
+#include "../inputoutput.h"
+#include "../thread.h"
+#include "../array.h"
+#include "../singleton.h"
 
 namespace iocp {
 	class worker;

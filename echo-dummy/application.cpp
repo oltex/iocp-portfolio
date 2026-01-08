@@ -3,14 +3,24 @@
 #include "library/iocp/timer.h"
 
 application::application(void) noexcept
-	: _echo_network(200, 0xaabbccddeeff) {
-	_echo_network.listen_start(library::socket_address_ipv4("127.0.0.1", 6000), 65535);
-
+	: _network(*this, 200, 40000, 4000, 0xaabbccddeeff, 128, 40000, 4000) {
 	_stop_count.store(1);
 	thread_monitor();
 
-	_command.add("Test", [&](std::span<command::parameter> arg) {
-		printf("HELLOOOOOOOOOOOOO");
+	_command.add("Client_Count", [&](std::span<command::parameter> arg) {
+		_client_count = arg[0].get<int>();
+		});
+	_command.add("Disconnect_Test", [&](std::span<command::parameter> arg) {
+		_disconnect_test = arg[0].get<bool>();
+		});
+	_command.add("Over_Send", [&](std::span<command::parameter> arg) {
+		_over_send = arg[0].get<int>();
+		});
+	_command.add("Action_Delay", [&](std::span<command::parameter> arg) {
+		_action_delay = arg[0].get<int>();
+		});
+	_command.add("Start", [&](std::span<command::parameter> arg) {
+		for(auto index =0; index < _client_count; ++index)
 		});
 	for (;;) {
 		std::string buffer;
@@ -18,7 +28,7 @@ application::application(void) noexcept
 			break;
 		parser parser;
 		parser.execute(buffer);
-		for (auto& iter : parser) 
+		for (auto& iter : parser)
 			_command.execute(iter.first, iter.second);
 	}
 }
@@ -26,8 +36,7 @@ application::~application(void) noexcept {
 	_stop_source.request_stop();
 	for (int stop_count; 0 != (stop_count = _stop_count.load()); )
 		_stop_count.wait(stop_count);
-	_echo_network.listen_stop();
-	_echo_network.session_clear();
+	_network.session_clear();
 }
 
 auto application::thread_monitor(void) noexcept -> iocp::coroutine<void> {

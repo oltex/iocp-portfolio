@@ -28,8 +28,8 @@ namespace tcp {
 
 		unsigned long long _send_time;
 		unsigned long _send_timeout;
-		unsigned long _send_byte = 0;
-		unsigned long _send_bytelimit = 5000;
+		unsigned long _send_byte;
+		unsigned long _send_bytelimit;
 		unsigned long _send_size;
 		library::lockfree::queue<iocp::message, false> _send_queue;
 		overlap _send_overlap;

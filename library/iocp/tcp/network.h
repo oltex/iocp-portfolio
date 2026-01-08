@@ -75,19 +75,18 @@ namespace tcp {
 		std::atomic<int> _stop_count;
 		grc::arena<session, true> _session_arena;
 
-
 		//security
 		//엑셉트 ip당 접속 제한을 설정해두기 umap으로 특정 ip는 허용케금 하기
 		//엑셉트 특정 ip는 아예 차단하기 bloom filter를 써서 막기
 		//엑셉트 ip 대역을 차단시키는 방법도 연구하기
-		unsigned long _receive_timeout = 1000000;
-		unsigned long _receive_bytelimit = 512;
+		unsigned long _receive_timeout;
+		unsigned long _receive_bytelimit;
 
 		unsigned long long _header_fixed;
-		unsigned long _header_bytelimit = 128;
+		unsigned long _header_bytelimit;
 
-		unsigned long _send_timeout = 1000000;
-		unsigned long _send_bytelimit = 2048;
+		unsigned long _send_timeout;
+		unsigned long _send_bytelimit;
 
 		//metric
 		unsigned long _accept_bucket = 0;
@@ -108,7 +107,7 @@ namespace tcp {
 			unsigned long long _send_bytelimit_total = 0;
 		} _metric;
 	public:
-		network(unsigned long const session_capacity, 
+		network(unsigned long const session_capacity,
 			unsigned long receive_timeout, unsigned long receive_bytelimit,
 			unsigned long long header_fixed, unsigned long header_bytelimit,
 			unsigned long send_timeout, unsigned long send_bytelimit) noexcept;
@@ -120,7 +119,7 @@ namespace tcp {
 
 		void listen_start(library::socket_address const& address, int backlog) noexcept;
 		void listen_stop(void) noexcept;
-		void socket_connect(library::socket_address const& address) noexcept;
+		auto socket_connect(library::socket_address const& address) noexcept -> iocp::coroutine<handle>;
 		virtual auto socket_accept(library::socket_address const& address) noexcept -> iocp::coroutine<bool> = 0;
 		auto session_receive(node& node) noexcept -> iocp::coroutine<void>;
 		void session_send(handle handle, iocp::message message) noexcept;

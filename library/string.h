@@ -72,7 +72,7 @@ namespace library {
 			return ::vswprintf_s(buffer, format, arg);
 		va_end(arg);
 	}
-	template <typename from, typename to>
+	template <typename to, typename from>
 		requires (library::any_of_type<from, char, wchar_t>)
 	inline auto string_to(from const* const string, int const radix = 10) noexcept -> to {
 		if constexpr (std::is_same_v<to, bool>) {
@@ -97,7 +97,6 @@ namespace library {
 				return std::strtof(string, nullptr);
 			else if constexpr (library::same_type<to, double>)
 				return std::strtod(string, nullptr);
-
 		}
 		else {
 			if constexpr (library::same_type<int, to>)
