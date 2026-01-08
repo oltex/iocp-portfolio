@@ -3,6 +3,7 @@
 #include "../task.h"
 #include "../promise.h"
 #include "../../lockfree/queue.h"
+#include "../../grc/arena.h"
 
 namespace actor {
 	struct job {
@@ -10,7 +11,7 @@ namespace actor {
 		job(unsigned short type) noexcept;
 	};
 
-	class entity : public iocp::task {
+	class entity : public iocp::task, public grc::arena<entity, false>::self {
 		friend class system;
 		std::coroutine_handle<void> _handle;
 		unsigned short _destroy_flag;
@@ -22,7 +23,7 @@ namespace actor {
 		entity(entity&&) noexcept = delete;
 		auto operator=(entity const&) noexcept -> entity & = delete;
 		auto operator=(entity&&) noexcept -> entity & = delete;
-		~entity(void) noexcept = default;
+		virtual ~entity(void) noexcept = default;
 
 		auto flag_ready(void) noexcept -> bool;
 		void flag_finish(void) noexcept;

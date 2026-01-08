@@ -6,6 +6,8 @@
 #include "../../grc/arena.h"
 
 namespace actor {
+	using handle = grc::arena<entity, false>::handle;
+
 	class wait : public library::awaiter {
 		using size_type = unsigned int;
 		friend class system;
@@ -17,11 +19,12 @@ namespace actor {
 	};
 
 	class system : public library::singleton<system, true> {
+	public:
 		friend class library::singleton<system, true>;
 		friend class wait;
-		grc::arena<entity, false> _entity_arena;
-		using handle = grc::arena<entity, false>::handle;
 		using node = grc::arena<entity, false>::node;
+	private:
+		grc::arena<entity, false> _entity_arena;
 
 		system(unsigned long const entity_capacity) noexcept;
 		system(system const&) noexcept = delete;

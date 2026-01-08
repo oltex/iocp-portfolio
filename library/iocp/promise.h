@@ -45,18 +45,13 @@ namespace iocp {
 		auto final_suspend(void) noexcept -> finalize {
 			return finalize(_parent);
 		}
-		void return_value(result const& value) noexcept {
-			_value = value;
+		template<typename type>
+		void return_value(type&& value) noexcept {
+			_value = std::forward<type>(value);
 		}
-		void return_value(result&& value) noexcept {
-			_value = std::move(value);
-		}
-		auto yield_value(result const& value) noexcept -> yield<result> {
-			_value = value;
-			return yield<result>(_parent, _value);
-		}
-		auto yield_value(result&& value) noexcept -> yield<result> {
-			_value = std::move(value);
+		template<typename type>
+		auto yield_value(type&& value) noexcept -> yield<result> {
+			_value = std::forward<type>(value);
 			return yield<result>(_parent, _value);
 		}
 		virtual void execute(void) noexcept override {

@@ -1,6 +1,7 @@
 #pragma once
 #include "../message.h"
-#include "../../grc/handle.h"
+#include "../promise.h"
+#include "../../grc/arena.h"
 #include "../../socket.h"
 #include "../../time.h"
 #include "../../lockfree/queue.h"
@@ -15,7 +16,7 @@ namespace tcp {
 		}
 	};
 
-	class session {
+	class session : public grc::arena<session, false>::self {
 		friend class network;
 		friend class receive;
 		library::socket _socket;
@@ -23,8 +24,8 @@ namespace tcp {
 
 		unsigned long long _receive_time;
 		unsigned long _receive_timeout;
+		unsigned long _receive_bytelimit;
 		//unsigned long _receive_byte;
-		//unsigned long _receive_bytelimit;
 
 		unsigned long long _send_time;
 		unsigned long _send_timeout;
@@ -34,9 +35,9 @@ namespace tcp {
 		library::lockfree::queue<iocp::message, false> _send_queue;
 		overlap _send_overlap;
 	public:
-		session(library::socket& socket, unsigned long receive_timeout, unsigned long send_timeout, unsigned long send_bytelimit) noexcept;
-		~session(void) noexcept;
-
+		session(library::socket& socket, unsigned long receive_timeout, unsigned long receive_bytelimit, unsigned long send_timeout, unsigned long send_bytelimit) noexcept;
+		virtual ~session(void) noexcept;
+	private:
 		void receive_time(unsigned long long time) noexcept;
 		auto receive_post(WSABUF& wsa_buffer, unsigned long& transferred, library::overlap& overlap) -> library::socket::result;
 
@@ -48,5 +49,7 @@ namespace tcp {
 		inline static auto recover(overlap& overlapped) noexcept -> session& {
 			return *reinterpret_cast<session*>(reinterpret_cast<unsigned char*>(&overlapped) - offsetof(session, _send_overlap));
 		}
+	public:
+		virtual auto session_receive(iocp::message message) noexcept -> iocp::coroutine<bool> = 0;
 	};
 }

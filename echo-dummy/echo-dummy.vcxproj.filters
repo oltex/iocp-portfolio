@@ -5,11 +5,13 @@
     <ClInclude Include="network.h" />
     <ClInclude Include="command.h" />
     <ClInclude Include="dummy.h" />
+    <ClInclude Include="session.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="application.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="dummy.cpp" />
+    <ClCompile Include="session.cpp" />
   </ItemGroup>
 </Project>

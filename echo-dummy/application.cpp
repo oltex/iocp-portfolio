@@ -1,9 +1,10 @@
 #include "application.h"
+#include "dummy.h"
 #include "library/iocp/monitor.h"
 #include "library/iocp/timer.h"
 
 application::application(void) noexcept
-	: _network(*this, 200, 40000, 4000, 0xaabbccddeeff, 128, 40000, 4000) {
+	: _network(200, 0xaabbccddeeff, 128) {
 	_stop_count.store(1);
 	thread_monitor();
 
@@ -20,7 +21,20 @@ application::application(void) noexcept
 		_action_delay = arg[0].get<int>();
 		});
 	_command.add("Start", [&](std::span<command::parameter> arg) {
-		for(auto index =0; index < _client_count; ++index)
+		auto& instance = actor::system::instance();
+		for (auto index = 0; index < _client_count; ++index) {
+			auto pointer = new dummy(_network);
+			auto handle = instance.entity_attach(pointer, [](actor::entity* pointer) {
+				delete pointer;
+				});
+			_dummy.emplace(handle);
+		}
+		});
+	_command.add("Stop", [&](std::span<command::parameter> arg) {
+		auto& instance = actor::system::instance();
+		for (auto& iter : _dummy) {
+			instance.entity_destroy(iter);
+		}
 		});
 	for (;;) {
 		std::string buffer;
@@ -42,6 +56,7 @@ application::~application(void) noexcept {
 auto application::thread_monitor(void) noexcept -> iocp::coroutine<void> {
 	auto stop_token = _stop_source.get_token();
 	while (false == stop_token.stop_requested()) {
+		printf("Thread Monitor\n");
 		co_await iocp::sleep(1000);
 	}
 	_stop_count.fetch_sub(1);
