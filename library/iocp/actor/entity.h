@@ -1,7 +1,7 @@
 #pragma once
 #include "../message.h"
-#include "../task.h"
 #include "../promise.h"
+#include "../scheduler.h"
 #include "../../lockfree/queue.h"
 #include "../../grc/arena.h"
 
@@ -13,6 +13,7 @@ namespace actor {
 
 	class entity : public iocp::task, public grc::arena<entity, false>::self {
 		friend class system;
+		friend class wait;
 		std::coroutine_handle<void> _handle;
 		unsigned short _destroy_flag;
 		unsigned short _queue_flag;
@@ -24,11 +25,11 @@ namespace actor {
 		auto operator=(entity const&) noexcept -> entity & = delete;
 		auto operator=(entity&&) noexcept -> entity & = delete;
 		virtual ~entity(void) noexcept = default;
-
+	private:
 		auto flag_ready(void) noexcept -> bool;
 		void flag_finish(void) noexcept;
-		virtual void execute(void) noexcept override;
-
-		virtual auto callback(job& job) noexcept -> iocp::coroutine<bool> = 0;
+		virtual void task_execute(void) noexcept override;
+	public:
+		virtual auto actor_mailbox(job& job) noexcept -> iocp::coroutine<bool> = 0;
 	};
 }

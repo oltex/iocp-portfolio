@@ -8,6 +8,9 @@ struct tick : public actor::job {
 
 class dummy : public actor::entity {
 public:
+	enum job {
+		frame
+	};
 	enum state {
 		disconnect, connect, interact, attack, timeout, error
 		// disconnect : ²÷±è -> ¿¬°á
@@ -21,15 +24,15 @@ public:
 	state _state;
 	tcp::handle _session_handle;
 
+	unsigned long long _send_message;
+
 	std::stop_source _stop_source;
 	std::atomic<int> _stop_count;
-
-	int _test = 0;
 public:
 	dummy(network& network) noexcept;
 	virtual ~dummy(void) noexcept;
 
-	virtual auto callback(actor::job& job) noexcept -> iocp::coroutine<bool> override;
+	virtual auto actor_mailbox(actor::job& job) noexcept -> iocp::coroutine<bool> override;
 	auto wake_loop(void) noexcept -> iocp::coroutine<void>;
 
 	auto state_disconnect(actor::job& job) noexcept -> iocp::coroutine<void>;

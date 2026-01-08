@@ -1,5 +1,5 @@
 #pragma once
-#include "task.h"
+#include "scheduler.h"
 #include "../time.h"
 #include "../thread.h"
 #include "../synchronize.h"
@@ -15,7 +15,7 @@ namespace iocp {
 		sleep(size_type const time) noexcept;
 		void await_suspend(std::coroutine_handle<void> handle) noexcept;
 		auto time(void) const noexcept -> unsigned long;
-		virtual void execute(void) noexcept override;
+		virtual void task_execute(void) noexcept override;
 	};
 
 	class timer : public library::singleton<timer, true> {

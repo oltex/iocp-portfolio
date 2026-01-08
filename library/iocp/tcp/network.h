@@ -1,7 +1,7 @@
 #pragma once
 #include "session.h"
-#include "../worker.h"
 #include "../promise.h"
+#include "../scheduler.h"
 #include "../../grc/arena.h"
 #include <stop_token>
 #include <atomic>
@@ -126,6 +126,6 @@ namespace tcp {
 		auto network_monitor(void) noexcept -> iocp::coroutine<void>;
 		auto network_metric(void) const noexcept -> metric;
 
-		virtual void execute(bool result, unsigned long transferred, uintptr_t key, OVERLAPPED* overlapped) noexcept override;
+		virtual void worker_execute(bool result, unsigned long transferred, uintptr_t key, OVERLAPPED* overlapped) noexcept override;
 	};
 }

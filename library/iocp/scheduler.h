@@ -5,8 +5,32 @@
 #include "../singleton.h"
 
 namespace iocp {
-	class worker;
-	class task;
+	class scheduler;
+	class task {
+	public:
+		inline task(void) noexcept = default;
+		inline task(task const&) noexcept = default;
+		inline task(task&&) noexcept = default;
+		inline auto operator=(task const&) noexcept -> task & = default;
+		inline auto operator=(task&&) noexcept -> task & = default;
+		inline virtual ~task(void) noexcept = default;
+
+		virtual void task_execute(void) noexcept = 0;
+	};
+	class worker {
+	protected:
+		scheduler& _scheduler;
+	public:
+		worker(void) noexcept;
+		inline worker(worker const&) noexcept = delete;
+		inline worker(worker&&) noexcept = delete;
+		inline auto operator=(worker const&) noexcept -> worker & = delete;
+		inline auto operator=(worker&&) noexcept -> worker & = delete;
+		inline ~worker(void) noexcept = default;
+
+		virtual void worker_execute(bool result, unsigned long transferred, uintptr_t key, OVERLAPPED* overlapped) noexcept = 0;
+	};
+
 	class scheduler : public library::singleton<scheduler, true> {
 		friend class library::singleton<scheduler, true>;
 		using size_type = unsigned int;

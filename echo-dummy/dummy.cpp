@@ -17,19 +17,15 @@ dummy::~dummy(void) noexcept {
 	for (int stop_count; 0 != (stop_count = _stop_count.load()); )
 		_stop_count.wait(stop_count);
 }
-auto dummy::callback(actor::job& job) noexcept -> iocp::coroutine<bool> {
-	if (1 != library::interlock_increment(_test))
-		int a = 10;
+auto dummy::actor_mailbox(actor::job& job) noexcept -> iocp::coroutine<bool> {
 	switch (_state) {
 	case disconnect:
 		co_await state_disconnect(job);
 		break;
 	case connect:
-		co_await state_disconnect(job);
+		co_await state_connect(job);
 		break;
 	}
-	if (0 != library::interlock_decrement(_test))
-		int a = 10;
 	co_return true;
 }
 auto dummy::wake_loop(void) noexcept -> iocp::coroutine<void> {
@@ -51,13 +47,14 @@ auto dummy::state_disconnect(actor::job& job) noexcept -> iocp::coroutine<void> 
 		if (auto result = co_await function; 0 != result) {
 			library::pair<tcp::session*, void(*)(tcp::session*)> pair{
 				new session(*reinterpret_cast<library::socket*>(result), 40000, 512, 40000, 3000),
-				session::session_destruct
+				[](tcp::session* pointer) noexcept { delete pointer; }
 			};
 			_session_handle = reinterpret_cast<tcp::handle>(co_await function(reinterpret_cast<void*>(&pair)));
+			_state = state::connect;
 			co_await function;
 		}
-		else 
-			_state = error;
+		else
+			_state = state::error;
 		break;
 	}
 	default:
@@ -66,5 +63,15 @@ auto dummy::state_disconnect(actor::job& job) noexcept -> iocp::coroutine<void> 
 	co_return;
 }
 auto dummy::state_connect(actor::job& job) noexcept -> iocp::coroutine<void> {
+	switch (job._type) {
+	case 0: {
+		_send_message = rand();
+		auto message = _network.message_create(8);
+		message << _send_message;
+		_network.session_send(_session_handle, message);
+	} break;
+	default:
+		__debugbreak();
+	}
 	co_return;
 }

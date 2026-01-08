@@ -1,5 +1,5 @@
 #pragma once
-#include "task.h"
+#include "scheduler.h"
 #include "library/container/list.h"
 #include "library/container/span.h"
 #include "library/container/vector.h"
@@ -41,7 +41,7 @@ namespace iocp {
 		//}
 		lock(library::vector<proxy>& arg) noexcept;
 		auto await_suspend(std::coroutine_handle<void> handle) noexcept -> bool;
-		virtual void execute(void) noexcept override;
+		virtual void task_execute(void) noexcept override;
 	};
 	extern void unlock(library::vector<proxy>& arg) noexcept;
 
@@ -53,6 +53,6 @@ namespace iocp {
 		fork(size_type count) noexcept;
 		auto await_suspend(std::coroutine_handle<void> handle) noexcept -> bool;
 		void join(void) noexcept;
-		virtual void execute(void) noexcept override;
+		virtual void task_execute(void) noexcept override;
 	};
 }

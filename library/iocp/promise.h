@@ -1,5 +1,4 @@
 #pragma once
-#include "task.h"
 #include "scheduler.h"
 #include "../coroutine.h"
 
@@ -54,7 +53,7 @@ namespace iocp {
 			_value = std::forward<type>(value);
 			return yield<result>(_parent, _value);
 		}
-		virtual void execute(void) noexcept override {
+		virtual void task_execute(void) noexcept override {
 			base::handle().resume();
 		}
 	};
@@ -73,7 +72,7 @@ namespace iocp {
 
 		auto final_suspend(void) noexcept -> finalize;
 		void return_void(void) noexcept {};
-		virtual void execute(void) noexcept override;
+		virtual void task_execute(void) noexcept override;
 	};
 
 	template<typename result>
