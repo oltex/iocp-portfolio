@@ -47,12 +47,12 @@ namespace actor {
 			return node->_key;
 		}
 		template<typename job>
-		void entity_enqueue(handle handle, job& value) noexcept {
+		void entity_enqueue(handle handle, job const& value) noexcept {
 			auto& node = _entity_arena.get(handle);
 			if (node.acquire(handle)) {
 				auto& pool = iocp::message_pool::instance();
 				auto message = pool.allocate(sizeof(job));
-				message.push(reinterpret_cast<unsigned char*>(&value), sizeof(job));
+				message.push(reinterpret_cast<unsigned char const*>(&value), sizeof(job));
 				node._value->_queue.emplace(message);
 
 				if (node._value->flag_ready()) {

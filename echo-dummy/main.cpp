@@ -9,14 +9,13 @@
 
 int main(void) noexcept {
 	library::crt_set_debug_flag();
-	iocp::scheduler::construct(8, 60);
+	iocp::scheduler::construct(8, 8);
 	iocp::timer::construct();
 	iocp::monitor::construct();
-	actor::system::construct(200);
+	actor::system::construct(50);
 	{
 		application app;
 	}
-
 	actor::system::destruct();
 	iocp::monitor::destruct();
 	iocp::timer::destruct();

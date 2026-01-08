@@ -1,7 +1,7 @@
 #pragma once
-#include "../memory.h"
-#include "../function.h"
-#include "../template.h"
+#include "memory.h"
+#include "function.h"
+#include "template.h"
 #include <memory>
 #include <cassert>
 
@@ -32,7 +32,7 @@ namespace detail {
 			_rear += sizeof(type);
 			return *this;
 		}
-		inline void push(byte* const buffer, size_type const length) noexcept {
+		inline void push(byte const* const buffer, size_type const length) noexcept {
 			assert(length + _rear <= _capacity && "not enough capacity");
 			library::memory_copy(_array + _rear, buffer, length);
 			_rear += length;
@@ -77,7 +77,7 @@ namespace detail {
 			_rear += sizeof(type);
 			return *this;
 		}
-		inline void push(byte* const buffer, size_type const length) noexcept {
+		inline void push(byte const* const buffer, size_type const length) noexcept {
 			library::memory_copy(_array + _rear, buffer, length);
 			_rear += length;
 		}
@@ -197,7 +197,7 @@ namespace library {
 			_rear += sizeof(type);
 			return *this;
 		}
-		inline void push(byte* const buffer, size_type const length) noexcept {
+		inline void push(byte const* const buffer, size_type const length) noexcept {
 			assert(length + _rear <= _capacity && "not enough capacity");
 			library::memory_copy(_array + _rear, buffer, length);
 			_rear += length;

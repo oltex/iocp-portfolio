@@ -7,6 +7,8 @@
 #include <atomic>
 
 namespace tcp {
+	using handle = grc::arena<session, false>::handle;
+
 	class accept : public library::awaiter {
 		std::coroutine_handle<void> _handle;
 		library::socket_extend& _socket_extend;
@@ -61,7 +63,6 @@ namespace tcp {
 	class network : public iocp::worker {
 	protected:
 		using size_type = unsigned int;
-		using handle = grc::arena<session, false>::handle;
 		using node = grc::arena<session, false>::node;
 	private:
 		enum class key_type : unsigned char {
