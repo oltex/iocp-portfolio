@@ -3,8 +3,7 @@
 #include "library/iocp/timer.h"
 
 application::application(void) noexcept
-	: _echo_network(200, 0xaabbccddeeff) {
-	_echo_network.listen_start(library::socket_address_ipv4("127.0.0.1", 6000), 65535);
+	: _network(200, 0xaabbccddeeff, 128) {
 
 	_monitor_count.store(1);
 	monitor();
@@ -14,8 +13,9 @@ application::~application(void) noexcept {
 	for (int stop_count; 0 != (stop_count = _monitor_count.load()); )
 		_monitor_count.wait(stop_count);
 
-	_echo_network.listen_stop();
-	_echo_network.session_clear();
+	_network.listen_start(library::socket_address_ipv4("127.0.0.1", 6000), 65535);
+	_network.listen_stop();
+	_network.session_clear();
 }
 
 auto application::monitor(void) noexcept -> iocp::coroutine<void> {
@@ -30,7 +30,7 @@ auto application::monitor(void) noexcept -> iocp::coroutine<void> {
 		auto tcpv4 = monitor.get_tcpv4();
 		auto ipv4 = monitor.get_ipv4();
 		auto nic = monitor.get_nic();
-		auto metric = _echo_network.network_metric();
+		auto metric = _network.network_metric();
 
 		printf("----------------------------------------------------------------------------\n"\
 			"[Processor Monitor]\n"\

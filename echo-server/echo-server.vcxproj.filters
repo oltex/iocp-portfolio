@@ -4,6 +4,7 @@
     <ClInclude Include="application.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="session.h" />
+    <ClInclude Include="command.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

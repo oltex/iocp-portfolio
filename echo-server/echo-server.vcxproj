@@ -156,6 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
+    <ClInclude Include="command.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="session.h" />
   </ItemGroup>
