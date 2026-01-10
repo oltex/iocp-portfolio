@@ -2,7 +2,7 @@
 #include "handle.h"
 #include "../memory.h"
 #include "../interlock.h"
-#include "../lockfree/free_list.h"
+#include "../pool.h"
 
 namespace grc {
 	template<typename type, bool inplace>
@@ -29,7 +29,7 @@ namespace grc {
 				_value = library::cast<type*>(pointer);
 				_deleter = deleter;
 				_key += 0x10000ull;
-				if constexpr (std::is_base_of_v<self, derive>) 
+				if constexpr (std::is_base_of_v<self, derive>)
 					pointer->_key = _key;
 				library::interlock_increment(_reference);
 				library::interlock_and(_reference, 0x7FFFFFFFul);
@@ -48,9 +48,9 @@ namespace grc {
 				return false;
 			}
 		};
-		using iterator = library::lockfree::free_list<node, false, false>::iterator;
+		using iterator = library::lockfree::fixed_pool<node, false, false>::iterator;
 	protected:
-		library::lockfree::free_list<node, false, false> _slot;
+		library::lockfree::fixed_pool<node, false, false> _slot;
 	public:
 		arena(size_type const capacity) noexcept
 			: _slot(capacity) {
@@ -116,9 +116,9 @@ namespace grc {
 				return *reinterpret_cast<node*>(reinterpret_cast<unsigned char*>(&value) - offsetof(node, _value));
 			}
 		};
-		using iterator = library::lockfree::free_list<node, false, false>::iterator;
+		using iterator = library::lockfree::fixed_pool<node, false, false>::iterator;
 	protected:
-		library::lockfree::free_list<node, false, false> _slot;
+		library::lockfree::fixed_pool<node, false, false> _slot;
 	public:
 		arena(size_type const capacity) noexcept
 			: _slot(capacity) {
