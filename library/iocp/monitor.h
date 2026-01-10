@@ -8,6 +8,7 @@
 namespace iocp {
 	class monitor : public library::singleton<monitor, true> {
 		friend class library::singleton<monitor, true>;
+		std::wstring _process_name;
 		std::stop_source _stop_source;
 		std::atomic<int> _stop_count;
 
@@ -151,7 +152,7 @@ namespace iocp {
 		library::seq_lock _ipv4_lock;
 		library::seq_lock _nic_lock;
 
-		monitor(void) noexcept;
+		monitor(std::wstring_view process_name) noexcept;
 		monitor(monitor const&) noexcept = delete;
 		monitor(monitor&&) noexcept = delete;
 		auto operator=(monitor const&) noexcept -> monitor & = delete;

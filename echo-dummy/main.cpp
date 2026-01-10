@@ -11,12 +11,12 @@ int main(void) noexcept {
 	library::crt_set_debug_flag();
 	iocp::scheduler::construct(8, 8);
 	iocp::timer::construct();
-	iocp::monitor::construct();
-	actor::system::construct(50);
+	iocp::monitor::construct(L"echo-dummy");
 	{
-		application app;
+		application& app = application::construct();
+		app.execute();
+		app.destruct();
 	}
-	actor::system::destruct();
 	iocp::monitor::destruct();
 	iocp::timer::destruct();
 	iocp::scheduler::destruct();

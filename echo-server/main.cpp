@@ -8,10 +8,11 @@
 int main(void) noexcept {
 	iocp::scheduler::construct(8, 8);
 	iocp::timer::construct();
-	iocp::monitor::construct();
+	iocp::monitor::construct(L"echo-server");
 	{
-		application app;
-		system("pause");
+		application& app = application::construct();
+		app.execute();
+		app.destruct();
 	}
 	iocp::monitor::destruct();
 	iocp::timer::destruct();

@@ -1,16 +1,17 @@
 #pragma once
 #include "define.h"
 #include "memory.h"
+#include <type_traits>
 
 namespace library {
 	template<typename type, bool placement = false, bool dll = false>
 	class singleton {
-		inline explicit singleton(singleton const&) noexcept = delete;
-		inline explicit singleton(singleton&&) noexcept = delete;
+		inline singleton(singleton const&) noexcept = delete;
+		inline singleton(singleton&&) noexcept = delete;
 		inline auto operator=(singleton const&) noexcept -> singleton & = delete;
 		inline auto operator=(singleton&&) noexcept -> singleton & = delete;
 	protected:
-		inline explicit singleton(void) noexcept = default;
+		inline singleton(void) noexcept = default;
 		inline ~singleton(void) noexcept = default;
 	public:
 		inline static auto instance(void) noexcept -> type& {
@@ -22,12 +23,12 @@ namespace library {
 	class singleton<type, true, false> {
 		inline static type* _instance;
 
-		inline explicit singleton(singleton const&) noexcept = delete;
-		inline explicit singleton(singleton&&) noexcept = delete;
+		inline singleton(singleton const&) noexcept = delete;
+		inline singleton(singleton&&) noexcept = delete;
 		inline auto operator=(singleton const&) noexcept -> singleton & = delete;
 		inline auto operator=(singleton&&) noexcept -> singleton & = delete;
 	protected:
-		inline explicit singleton(void) noexcept = default;
+		inline singleton(void) noexcept = default;
 		inline ~singleton(void) noexcept = default;
 	public:
 		template<typename... argument>
@@ -51,18 +52,28 @@ namespace library {
 			library::deallocate(_instance);
 		}
 	};
-
-
+	template<typename type>
+	class declspec_dll singleton<type, false, true> {
+		inline singleton(singleton const&) noexcept = delete;
+		inline singleton(singleton&&) noexcept = delete;
+		inline auto operator=(singleton const&) noexcept -> singleton & = delete;
+		inline auto operator=(singleton&&) noexcept -> singleton & = delete;
+	protected:
+		inline singleton(void) noexcept = default;
+		inline ~singleton(void) noexcept = default;
+	public:
+		inline static auto instance(void) noexcept -> type&;
+	};
 	template<typename type>
 	class declspec_dll singleton<type, true, true> {
 		static type* _instance;
 
-		inline explicit singleton(singleton const&) noexcept = delete;
-		inline explicit singleton(singleton&&) noexcept = delete;
+		inline singleton(singleton const&) noexcept = delete;
+		inline singleton(singleton&&) noexcept = delete;
 		inline auto operator=(singleton const&) noexcept -> singleton & = delete;
 		inline auto operator=(singleton&&) noexcept -> singleton & = delete;
 	protected:
-		inline explicit singleton(void) noexcept = default;
+		inline singleton(void) noexcept = default;
 		inline ~singleton(void) noexcept = default;
 	public:
 		template<typename... argument>
@@ -74,4 +85,22 @@ namespace library {
 		inline static void destruct(void) noexcept;
 #pragma warning(suppress: 4661)
 	};
+
+	namespace _thread_local {
+		template<typename type>
+		class singleton {
+			inline singleton(singleton const&) noexcept = delete;
+			inline singleton(singleton&&) noexcept = delete;
+			inline auto operator=(singleton const&) noexcept -> singleton & = delete;
+			inline auto operator=(singleton&&) noexcept -> singleton & = delete;
+		protected:
+			inline singleton(void) noexcept = default;
+			inline ~singleton(void) noexcept = default;
+		public:
+			inline static auto instance(void) noexcept -> type& {
+				thread_local type _instance;
+				return _instance;
+			}
+		};
+	}
 }

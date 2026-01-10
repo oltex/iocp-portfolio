@@ -29,7 +29,7 @@ namespace grc {
 				_value = library::cast<type*>(pointer);
 				_deleter = deleter;
 				_key += 0x10000ull;
-				if constexpr (std::is_base_of_v<self, derive>)
+				if constexpr (std::is_base_of_v<self, derive>) 
 					pointer->_key = _key;
 				library::interlock_increment(_reference);
 				library::interlock_and(_reference, 0x7FFFFFFFul);

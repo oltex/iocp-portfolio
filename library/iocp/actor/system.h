@@ -6,8 +6,6 @@
 #include "../../grc/arena.h"
 
 namespace actor {
-	using handle = grc::arena<entity, false>::handle;
-
 	class wait : public library::awaiter {
 		using size_type = unsigned int;
 		friend class system;
@@ -18,21 +16,20 @@ namespace actor {
 		auto await_suspend(std::coroutine_handle<void> handle) noexcept -> bool;
 	};
 
-	class system : public library::singleton<system, true> {
+	class system  {
 	public:
-		friend class library::singleton<system, true>;
 		friend class wait;
 		using node = grc::arena<entity, false>::node;
 	private:
 		grc::arena<entity, false> _entity_arena;
-
+	public:
 		system(unsigned long const entity_capacity) noexcept;
 		system(system const&) noexcept = delete;
 		system(system&&) noexcept = delete;
 		auto operator=(system const&) noexcept -> system & = delete;
 		auto operator=(system&&) noexcept -> system & = delete;
 		~system(void) noexcept = default;
-	public:
+
 		template<typename derive>
 		auto entity_attach(derive* pointer, void(*deleter)(entity*)) noexcept -> handle {
 			auto node = _entity_arena.allocate();
@@ -46,13 +43,13 @@ namespace actor {
 
 			return node->_key;
 		}
-		template<typename job>
-		void entity_enqueue(handle handle, job const& value) noexcept {
+		template<typename mail>
+		void entity_enqueue(handle handle, mail const& value) noexcept {
 			auto& node = _entity_arena.get(handle);
 			if (node.acquire(handle)) {
 				auto& pool = iocp::message_pool::instance();
-				auto message = pool.allocate(sizeof(job));
-				message.push(reinterpret_cast<unsigned char const*>(&value), sizeof(job));
+				auto message = pool.allocate(sizeof(mail));
+				message.push(reinterpret_cast<unsigned char const*>(&value), sizeof(mail));
 				node._value->_queue.emplace(message);
 
 				if (node._value->flag_ready()) {

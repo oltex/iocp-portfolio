@@ -2,16 +2,20 @@
 #include "../message.h"
 #include "../promise.h"
 #include "../scheduler.h"
-#include "../../lockfree/queue.h"
+#include "../../queue.h"
 #include "../../grc/arena.h"
 
 namespace actor {
-	struct job {
+	class entity;
+	using handle = grc::arena<entity, false>::handle;
+
+	struct mail {
 		unsigned short _type;
-		job(unsigned short type) noexcept;
+		mail(unsigned short type) noexcept;
 	};
 
 	class entity : public iocp::task, public grc::arena<entity, false>::self {
+		using self = grc::arena<entity, false>::self;
 		friend class system;
 		friend class wait;
 		std::coroutine_handle<void> _handle;
@@ -29,7 +33,9 @@ namespace actor {
 		auto flag_ready(void) noexcept -> bool;
 		void flag_finish(void) noexcept;
 		virtual void task_execute(void) noexcept override;
+		using self::arena_handle;
 	public:
-		virtual auto actor_mailbox(job& job) noexcept -> iocp::coroutine<bool> = 0;
+		auto entity_handle(void) noexcept -> handle;
+		virtual auto entity_mailbox(mail& mail) noexcept -> iocp::coroutine<bool> = 0;
 	};
 }

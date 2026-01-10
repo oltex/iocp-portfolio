@@ -6,6 +6,7 @@
     <ClInclude Include="command.h" />
     <ClInclude Include="dummy.h" />
     <ClInclude Include="session.h" />
+    <ClInclude Include="mail.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

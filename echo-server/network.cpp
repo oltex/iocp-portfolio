@@ -8,6 +8,7 @@ auto network::socket_accept(library::socket_address const& address) noexcept ->i
 		new session(socket, 40000, 512, 40000, 3000),
 		[](tcp::session* pointer) noexcept { delete pointer; }
 	};
+
 	auto key = reinterpret_cast<tcp::handle>(co_yield reinterpret_cast<void*>(&pair));
 	co_return reinterpret_cast<void*>(0);
 }

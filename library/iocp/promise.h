@@ -83,7 +83,7 @@ namespace iocp {
 	public:
 		~coroutine(void) noexcept {
 			if (true == _start) {
-				if constexpr (!std::is_void_v<result>)
+				if constexpr (!std::is_void_v<result>) 
 					assert(false);
 				auto& promise = base::_handle.promise();
 				promise._parent = std::noop_coroutine();

@@ -7,8 +7,6 @@
 #include <atomic>
 
 namespace tcp {
-	using handle = grc::arena<session, false>::handle;
-
 	class accept : public library::awaiter {
 		std::coroutine_handle<void> _handle;
 		library::socket_extend& _socket_extend;

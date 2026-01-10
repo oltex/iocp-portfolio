@@ -1,7 +1,7 @@
 #pragma once
 #include "../array.h"
-#include "../intrusive/pointer.h"
-#include "../thread-local/pool.h"
+#include "../pointer.h"
+#include "../pool.h"
 #include "../serialize.h"
 #include <cassert>
 

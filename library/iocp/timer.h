@@ -4,7 +4,7 @@
 #include "../thread.h"
 #include "../synchronize.h"
 #include "../coroutine.h"
-#include "../lockfree/queue.h"
+#include "../queue.h"
 
 namespace iocp {
 	class sleep : public library::awaiter, public task {

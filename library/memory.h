@@ -52,21 +52,20 @@ namespace library {
 	template<typename type, typename... argument>
 	inline auto construct(type& instance, argument&&... arg) noexcept {
 		//if constexpr (std::is_constructible_v<type, argument...>)
-			if constexpr (std::is_class_v<type>)
-				if constexpr (sizeof...(argument) == 0)
-					::new(reinterpret_cast<void*>(&instance)) type;
-				else
-					::new(reinterpret_cast<void*>(&instance)) type(std::forward<argument>(arg)...);
-			else if constexpr (0 < sizeof...(argument))
+		if constexpr (std::is_class_v<type>)
+			if constexpr (sizeof...(argument) == 0)
+				::new(reinterpret_cast<void*>(&instance)) type;
+			else
+				::new(reinterpret_cast<void*>(&instance)) type(std::forward<argument>(arg)...);
+		else if constexpr (0 < sizeof...(argument))
 #pragma warning(suppress: 6011)
-				instance = type(std::forward<argument>(arg)...);
+			instance = type(std::forward<argument>(arg)...);
 	}
 	template<typename type>
 	inline void destruct(type& instance) noexcept {
 		if constexpr (/*std::is_destructible_v<type> && */!std::is_trivially_destructible_v<type>)
 			instance.~type();
 	}
-
 	template<typename type, typename... argument>
 	inline auto create(argument&&... arg) noexcept -> type* {
 		if constexpr (sizeof...(argument) == 0)
@@ -75,9 +74,10 @@ namespace library {
 			return ::new(std::nothrow) type(std::forward<argument>(arg)...);
 	}
 	template<typename type, typename... argument>
-	inline auto destory(type* pointer) noexcept {
+	inline auto destroy(type* pointer) noexcept {
 		delete pointer;
 	}
+
 	template<typename to, typename from>
 	inline constexpr auto cast(from&& value) noexcept -> to {
 		if constexpr (requires { const_cast<to>(std::declval<from&&>()); })

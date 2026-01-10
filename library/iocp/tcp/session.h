@@ -4,9 +4,12 @@
 #include "../../grc/arena.h"
 #include "../../socket.h"
 #include "../../time.h"
-#include "../../lockfree/queue.h"
+#include "../../queue.h"
 
 namespace tcp {
+	class session;
+	using handle = grc::arena<session, false>::handle;
+
 	struct overlap {
 		enum class mode { connect, receive, send };
 		mode _mode;
@@ -17,6 +20,7 @@ namespace tcp {
 	};
 
 	class session : public grc::arena<session, false>::self {
+		using self = grc::arena<session, false>::self;
 		friend class network;
 		friend class receive;
 		library::socket _socket;
@@ -49,7 +53,9 @@ namespace tcp {
 		inline static auto recover(overlap& overlapped) noexcept -> session& {
 			return *reinterpret_cast<session*>(reinterpret_cast<unsigned char*>(&overlapped) - offsetof(session, _send_overlap));
 		}
+		using self::arena_handle;
 	public:
+		auto session_handle(void) noexcept -> handle;
 		virtual auto session_receive(iocp::message message) noexcept -> iocp::coroutine<bool> = 0;
 	};
 }
